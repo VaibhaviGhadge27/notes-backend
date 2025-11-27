@@ -1,22 +1,19 @@
-# Use Eclipse Temurin (Java) image
-FROM eclipse-temurin:21-jdk AS build
+# Use Maven to build the project
+FROM maven:3.9.6-eclipse-temurin-17 AS build
+
 WORKDIR /app
 
-# Copy Maven project files
 COPY pom.xml .
 COPY src ./src
 
-# Build the application
-RUN ./mvnw -q -DskipTests package
+RUN mvn -q -DskipTests package
 
-# ------------------
-# Run stage
-# ------------------
-FROM eclipse-temurin:21-jre
+# Run the application
+FROM eclipse-temurin:17-jdk
+
 WORKDIR /app
-
-# Copy the jar from build stage
 COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8080
+
 ENTRYPOINT ["java", "-jar", "app.jar"]
